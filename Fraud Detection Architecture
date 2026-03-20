@@ -1,0 +1,107 @@
+Why Fraud Detection Matters in Parametric Insurance
+Parametric insurance is powerful precisely because it's automated — but that same automation creates fraud surfaces. Without validation, bad actors could:
+
+Fake GPS location to appear in a disrupted zone
+File claims without ever being active on the platform
+Create multiple accounts to multiply payouts for the same event
+
+GigShield's 3-Layer Fraud Shield closes these gaps while keeping legitimate claims fast.
+
+3-Layer Fraud Shield
+CLAIM SUBMITTED (auto or manual)
+          │
+          ▼
+┌─────────────────────────────────────────────────┐
+│  LAYER 1: LOCATION VALIDATION (Real-time)        │
+│                                                  │
+│  ✓ Worker's GPS ping at trigger time must be     │
+│    inside the disrupted zone's polygon boundary  │
+│                                                  │
+│  ✓ GPS trail from past 2 hours must show         │
+│    continuous, realistic movement (not static)   │
+│                                                  │
+│  ✓ Speed/movement pattern check:                 │
+│    teleportation or impossible speeds = SPOOF    │
+└────────────────────┬────────────────────────────┘
+                     │ Pass / Fail score
+                     ▼
+┌─────────────────────────────────────────────────┐
+│  LAYER 2: ACTIVITY VALIDATION (Platform Data)    │
+│                                                  │
+│  ✓ Worker must have active platform session      │
+│    in the 2 hours before the trigger fired       │
+│                                                  │
+│  ✓ Order acceptance rate in that window          │
+│    must be > 20% (was worker actually working?)  │
+│                                                  │
+│  ✓ Platform login history consistency check      │
+│    (mock API — simulated in MVP)                 │
+└────────────────────┬────────────────────────────┘
+                     │ Pass / Fail score
+                     ▼
+┌─────────────────────────────────────────────────┐
+│  LAYER 3: STATISTICAL CROSS-VALIDATION           │
+│                                                  │
+│  ✓ Trigger data cross-checked with nearest       │
+│    IMD weather station (within 10km)             │
+│                                                  │
+│  ✓ Worker's claim rate vs. zone peer group:      │
+│    outliers flagged for review                   │
+│                                                  │
+│  ✓ Device fingerprint: multiple accounts on      │
+│    same device = flag                            │
+│                                                  │
+│  ✓ Policy age check: claim within 48 hrs of      │
+│    enrollment = automatic flag                   │
+└────────────────────┬────────────────────────────┘
+                     │ Combined fraud_score (0–1)
+                     ▼
+          ┌──────────────────────┐
+          │   DECISION ENGINE    │
+          ├──────────────────────┤
+          │ 0.0–0.4 → APPROVE   │
+          │ 0.4–0.7 → APPROVE + │
+          │          MONITOR     │
+          │ 0.7–0.9 → HOLD for  │
+          │          review      │
+          │ 0.9–1.0 → REJECT    │
+          └──────────────────────┘
+
+Specific Fraud Patterns Detected
+GPS Spoofing
+Detection method:
+  - Compare GPS coordinates with IP geolocation
+  - Check for mock location apps on device (device fingerprint)
+  - Validate movement velocity — if distance/time is physically impossible, flag
+  - Cross-reference with historical GPS patterns for this worker
+Fake Weather Claims
+Detection method:
+  - Trigger data must match at least 2 independent data sources
+    (e.g., OpenWeatherMap + IMD RSS both must confirm the event)
+  - AQI claims validated against nearest CPCB monitoring station
+  - Historical data comparison: is this level of disruption normal for this zone/month?
+Multi-Account / Syndicate Fraud
+Detection method:
+  - Device fingerprinting (browser fingerprint + Android device ID)
+  - Shared UPI account detection across multiple worker profiles
+  - Network IP clustering: multiple accounts filing simultaneously from same IP
+  - Graph analysis: workers connected to known fraud accounts get higher base score
+Early-Policy Fraud (Enrollment + Immediate Claim)
+Detection method:
+  - Policy age < 48 hours AND claim filed → automatic HOLD for review
+  - New enrollment spike in a zone before a predicted weather event → review queue
+
+Human Review Queue
+Claims in the 0.7–0.9 fraud score range are sent to a human reviewer:
+Review SLA: Resolved within 4 hours
+Reviewer sees:
+  - Worker profile and history
+  - Claim details and trigger event
+  - Fraud score breakdown (which layers flagged)
+  - GPS map showing worker location vs. disrupted zone
+  - Weather/AQI data at time of trigger
+  
+Reviewer actions: APPROVE | REJECT | REQUEST_CLARIFICATION
+
+Fraud Metrics Tracked (Insurer Dashboard)
+MetricDescriptionFraud Flag Rate% of claims flagged per weekAuto-Reject Rate% of claims auto-rejectedFalse Positive Rate% of flagged claims that were actually approved after reviewFraud Loss PreventedEstimated ₹ value of rejected fraudulent claimsTop Fraud PatternsMost common fraud signal this week
