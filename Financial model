@@ -1,0 +1,50 @@
+Revenue Model
+GigShield operates on a weekly subscription premium model. Revenue is collected every Monday via UPI AutoPay mandate.
+Revenue per worker per week  = Weekly Premium Paid
+Avg. premium (blended tiers) = ₹52/week
+
+Year 1 Target:  10,000 active workers
+Weekly Revenue: 10,000 × ₹52 = ₹5,20,000
+Annual Revenue: ₹5,20,000 × 52 = ₹2.70 Crore
+
+Unit Economics
+MetricValueAvg. Weekly Premium (blended)₹52Avg. Weekly Payout per Active Worker₹24 (estimated, based on disruption frequency)Loss Ratio~46% (industry benchmark for parametric: 40–55%)Gross Margin per Worker/Week₹28Platform Cost (tech, API, infra)₹6/worker/weekNet Margin per Worker/Week₹22
+
+P&L Projection (Year 1)
+ItemAnnual AmountGross Premium Revenue₹2.70 CrClaims Paid (46% loss ratio)₹1.24 CrGross Profit₹1.46 CrTechnology & Infra₹18LAPI & Payment Costs₹8LFraud Reserve (5%)₹13.5LOperations & Support₹20LNet Operating Profit~₹86L
+
+Reserve Management
+Every week, collected premiums are allocated as follows:
+Weekly Premium Collected (100%)
+  ├── 40% → Disruption Payout Reserve Pool
+  ├── 30% → Operational costs + platform fees
+  ├── 15% → Reinsurance layer (partner insurer)
+  ├── 10% → Technology & ML infrastructure
+  └──  5% → Fraud buffer / disputed claims
+
+Why Parametric Insurance Is Economically Viable
+AdvantageImpactNo claim investigation costTriggers are objective — zero adjuster overheadPredictable payout envelopeSeasonal patterns allow pre-provisioning of reservesLow per-claim processing costFully automated — < ₹2 per claim in compute costsHigh volume, low premium10,000 workers × ₹52/week — sustainable micro-insuranceReinsurance compatibilityParametric structures are well-understood by reinsurers
+
+Regulatory Context
+In India, parametric insurance for income protection falls under IRDAI's microinsurance guidelines. Key considerations:
+
+IRDAI Microinsurance Regulations 2015: Products with sum insured ≤ ₹2L qualify for simplified underwriting
+Partner Model: GigShield operates as a tech platform; insurance risk underwritten by a licensed IRDAI insurer partner
+Distribution: Digital distribution via own platform — no agent commission overhead
+Compliance: All premium collection via Razorpay (regulated payment gateway)
+
+
+For MVP/hackathon: Razorpay sandbox mode — no actual regulatory filings required.
+
+
+Break-Even Analysis
+Fixed Monthly Costs (infrastructure + team): ~₹3.5L/month
+Revenue per worker/month: ₹52 × 4.3 weeks = ₹223/worker/month
+Net revenue per worker (after claims): ₹223 × 54% = ₹120/worker/month
+
+Break-even workers: ₹3.5L / ₹120 = ~2,917 active workers
+
+Realistic break-even timeline: Month 4–5 (with proper sales partnerships with platforms)
+
+Growth Strategy
+PhaseStrategy0–3 monthsDirect pilot with 500 Swiggy/Zomato delivery hubs in Chennai3–6 monthsExpand to Bangalore and Hyderabad; integrate with platform partner apps6–12 monthsWhite-label offering to Zomato/Swiggy as embedded insurance productYear 2+Expand to e-commerce (Amazon, Flipkart) and grocery (Zepto, Blinkit) segments
