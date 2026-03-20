@@ -1,0 +1,85 @@
+Two Dashboard Views
+GigShield has two distinct dashboard experiences: one for workers and one for insurers/admins.
+
+Worker Dashboard
+Purpose
+Give the worker a clear, at-a-glance view of their protection status, recent claims, and earnings protected — in under 5 seconds of screen time.
+Layout (Mobile-First)
+┌────────────────────────────────────────┐
+│  🛡️ GigShield           [Profile ⚙️]  │
+│  Week: March 17–23, 2026               │
+├────────────────────────────────────────┤
+│                                        │
+│   POLICY STATUS                        │
+│   ✅ ACTIVE — Standard Tier            │
+│   Premium Paid: ₹57 (Mon, Mar 17)      │
+│   Max Payout Remaining: ₹800 / ₹1,000 │
+│   Days Remaining: 4 days               │
+│                                        │
+├────────────────────────────────────────┤
+│  🌧️ LIVE ALERT                         │
+│  Heavy rain detected in your zone.     │
+│  Claim auto-initiated.                 │
+│  Estimated payout: ₹200 in ~8 min ⏱️  │
+├────────────────────────────────────────┤
+│                                        │
+│   EARNINGS PROTECTED THIS MONTH        │
+│   [████████░░] ₹1,240 of ₹2,000 cap   │
+│                                        │
+├────────────────────────────────────────┤
+│   CLAIM HISTORY                        │
+│   ─────────────────────────────────   │
+│   Mar 19 | 🌧️ Heavy Rain | ₹420 ✅   │
+│   Mar 12 | 🌡️ Heat Alert | ₹320 ✅   │
+│   Mar 5  | 💨 AQI Alert  | ₹200 ✅   │
+│                                        │
+│   [View Full History]                  │
+└────────────────────────────────────────┘
+Key Metrics Displayed
+MetricDescriptionPolicy StatusActive / Lapsed / Cancelled with tier nameWeekly PremiumAmount paid and payment dateMax Payout RemainingHow much coverage is left this weekLive Alert BannerShows when a trigger is active in the worker's zoneEarnings ProtectedRunning total of payouts received this monthClaim HistoryLast 10 claims with trigger type, amount, and statusNext Week PremiumPreview of next Monday's renewal amount (with forecast adjustment if any)
+
+Insurer / Admin Dashboard
+Purpose
+Give the insurer a real-time operational view of the portfolio — risk exposure, claims performance, fraud activity, and predictive outlook.
+Layout (Web, Desktop-First)
+┌──────────────────────────────────────────────────────────────────┐
+│  GigShield Admin                    Week: Mar 17–23  [Export ↓] │
+├──────────┬───────────────────────────────────────────────────────┤
+│ SIDEBAR  │  OVERVIEW CARDS                                        │
+│          │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐│
+│ Overview │  │ Active   │ │ Premiums │ │ Claims   │ │ Loss     ││
+│ Claims   │  │ Policies │ │ This Week│ │ This Week│ │ Ratio    ││
+│ Fraud    │  │ 8,420    │ │ ₹4.37L  │ │ 1,240    │ │ 43.2%    ││
+│ Risk Map │  └──────────┘ └──────────┘ └──────────┘ └──────────┘│
+│ Forecast │                                                        │
+│ Workers  │  ZONE RISK HEATMAP (Leaflet.js)                       │
+│          │  ┌─────────────────────────────────────────────────┐  │
+│          │  │  [Chennai map with color-coded claim density]   │  │
+│          │  │  Red = High claims | Green = Low claims         │  │
+│          │  └─────────────────────────────────────────────────┘  │
+│          │                                                        │
+│          │  CLAIMS TREND (Weekly)        PAYOUT TIMELINE         │
+│          │  [Bar chart: claims/week]     [Avg: 11.4 min]        │
+│          │                                                        │
+│          │  FRAUD QUEUE (3 pending)                              │
+│          │  CLM-20041 | Score: 0.82 | GPS mismatch | [Review]   │
+│          │  CLM-20039 | Score: 0.76 | New policy   | [Review]   │
+└──────────┴───────────────────────────────────────────────────────┘
+Key Metrics Displayed
+MetricDescriptionActive PoliciesTotal active policies this week, broken down by tierPremiums CollectedThis week's total premium revenueClaims FiledTotal claims this week (auto-approved + in review + rejected)Loss RatioClaims paid ÷ premiums collected (target: < 55%)Zone Risk HeatmapLeaflet.js choropleth of Chennai by claim densityClaims Trend ChartWeekly bar chart of claim volume for past 8 weeksAvg Payout TimelineAverage time from trigger fire to payout creditFraud QueuePending human-review claims with fraud scoresPredictive OutlookNext week's expected claim volume (Prophet forecast)Top Fraud PatternsMost common fraud signals detected this weekWorker GrowthNew enrollments, churned workers, net active
+
+Predictive Analytics Panel (Insurer)
+NEXT WEEK FORECAST (Mar 24–30)
+─────────────────────────────────────────────
+Expected disruption days:     3.2 (HIGH)
+Dominant risk:                Heavy Rain (68% probability)
+Predicted claims:             ~1,850 (vs 1,240 this week)
+Predicted payout exposure:    ~₹2.1L
+Recommended reserve top-up:  ₹45,000
+
+Zone Breakdown:
+  Tambaram:   HIGH risk (flood history + rain forecast)
+  Adyar:      MEDIUM risk
+  Anna Nagar: LOW risk
+─────────────────────────────────────────────
+[Download Forecast Report PDF]
