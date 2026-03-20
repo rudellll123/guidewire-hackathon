@@ -1,0 +1,80 @@
+What is a Parametric Trigger?
+A parametric trigger is an objective, pre-defined threshold tied to real-world data. When the threshold is crossed, a claim is automatically initiated — no subjective assessment, no claim officer, no paperwork. The data source decides, not a person.
+This eliminates the #1 pain point in traditional insurance: disputed claims.
+
+Trigger Matrix
+IDDisruption TypeThreshold ConditionData SourcePayout % of Daily AvgT-01Heavy RainRainfall > 35mm/hr OR IMD Orange/Red Alert active in zoneOpenWeatherMap + IMD RSS70%T-02Flood / WaterloggingIMD Flood Alert Level 2+ in worker's pincode zoneIMD Flood API (mock)100%T-03Extreme HeatTemp > 42°C AND Heat Index > 50°C sustained for 3+ hoursOpenWeatherMap50%T-04Severe Air PollutionAQI > 300 (Severe) in worker's zone sustained for 4+ hoursOpenAQ / CPCB API60%T-05Social DisruptionBandh/Curfew keywords detected in News API AND Traffic congestion > 85%NewsAPI + TomTom (mock)80%
+
+Payout Calculation Logic
+pythondef calculate_payout(worker, trigger_event):
+    """
+    Calculate the final payout amount for a triggered claim.
+    """
+    daily_avg_earning = worker.avg_weekly_earning / 6      # 6 working days
+    hourly_rate       = daily_avg_earning / worker.avg_daily_hours
+
+    affected_hours    = trigger_event.duration_hours
+    payout_percentage = trigger_event.payout_pct           # e.g., 0.70 for T-01
+
+    raw_payout   = hourly_rate * affected_hours * payout_percentage
+    daily_cap    = worker.policy_tier.max_daily_payout
+    final_payout = min(raw_payout, daily_cap)
+
+    return round(final_payout, 2)
+
+Trigger Polling Architecture
+Every 15 minutes (Bull job scheduler via Redis):
+  ┌─────────────────────────────────────────────────────┐
+  │  for each active trigger API:                        │
+  │    fetch current conditions for all active zones     │
+  │    compare against trigger thresholds                │
+  │    if threshold breached:                            │
+  │      identify workers in affected zone polygon       │
+  │      run 3-layer fraud validation                    │
+  │      if approved → generate claim → queue payout     │
+  │      if flagged  → queue for human review            │
+  └─────────────────────────────────────────────────────┘
+
+Trigger Scenarios in Detail
+T-01: Heavy Rain
+Trigger fires when:
+  rainfall_1h > 35mm
+  OR weather_condition IN ['Thunderstorm', 'Heavy Rain']
+  OR IMD alert level IN ['Orange', 'Red'] for worker's district
+
+Duration tracked: from trigger fire until condition drops below threshold
+Payout = 70% of (affected hours × hourly rate), capped at daily limit
+T-02: Flood / Waterlogging
+Trigger fires when:
+  IMD Flood Alert Level >= 2 for worker's pincode
+  OR local traffic API shows 0 movement (flooded roads) for 2+ hours
+
+Payout = 100% of daily average (full day lost, highest severity)
+Max one T-02 claim per calendar day per worker
+T-03: Extreme Heat
+Trigger fires when:
+  temperature > 42°C
+  AND heat_index > 50°C
+  sustained for >= 3 consecutive polling cycles (45 minutes)
+
+Payout = 50% of daily average (workers may work reduced hours, not zero)
+T-04: Severe Pollution
+Trigger fires when:
+  AQI > 300 (Severe category per CPCB classification)
+  sustained for >= 4 hours in worker's operating zone
+
+AQI sourced from nearest monitoring station within 10km radius
+Payout = 60% of daily average
+T-05: Social Disruption (Bandh / Curfew)
+Trigger fires when ALL of these are true:
+  1. News API returns articles with keywords:
+     ['bandh', 'curfew', 'strike', 'shutdown', 'hartal']
+     in worker's city within last 2 hours
+  2. TomTom traffic index > 85% congestion (roads blocked)
+  3. Platform API (mock) shows order volume drop > 70%
+
+Cross-validation required to prevent fake news triggers
+Payout = 80% of daily average
+
+Trigger Limits & Guards
+RuleDetailMax claims per week4 (prevents gaming repeated small events)Minimum gap between same-type triggers4 hoursMax payout per weekCapped at policy tier's weekly maximumSimultaneous triggersOnly highest-severity trigger pays out (no double-dipping)
