@@ -1,0 +1,46 @@
+Design Philosophy
+Gig workers earn and think week-to-week. A monthly or annual premium model creates a psychological and cash-flow mismatch with how they live. GigShield's premium structure mirrors the gig economy's rhythm — simple, weekly, and auto-renewed every Monday.
+
+Premium Calculation Formula
+Weekly Premium = Base Rate × Zone Risk Multiplier × Season Multiplier × Tier Factor
+
+Base Rate         = ₹25  (flat for all workers)
+Zone Multiplier   = 0.8 (Low Risk) → 1.0 (Medium Risk) → 1.5 (High Risk/Flood-Prone)
+Season Multiplier = 1.0 (Oct–May, dry/mild) → 1.3 (Jun–Sep, active monsoon)
+Tier Factor       = 1.0 (Basic) | 1.7 (Standard) | 2.8 (Pro)
+
+Coverage Tiers
+TierWeekly Premium RangeMax Weekly PayoutMax Daily PayoutBest ForBasic₹19 – ₹39₹500₹100Part-time workers, low-risk zonesStandard₹35 – ₹65₹1,000₹200Full-time workers, moderate zonesPro₹55 – ₹105₹2,000₹400High-earning workers, flood-prone areas
+
+Worked Example
+
+Ravi — Standard Tier, Tambaram (high flood risk), October (monsoon)
+
+₹25 (base) × 1.3 (high flood zone) × 1.3 (monsoon season) × 1.7 (Standard tier)
+= ₹71.83 / week
+
+If rain trigger fires on a Tuesday for 5 hours:
+  daily_avg = ₹3,800 / 6 days = ₹633
+  hourly_rate = ₹633 / 10 hrs = ₹63.3
+  raw_payout = ₹63.3 × 5 hrs × 70% (rain payout %) = ₹221.6
+  final_payout = min(₹221.6, ₹200 daily cap) = ₹200 ✅
+
+Dynamic Pricing Features
+Forecast-Based Weekly Adjustment
+Each Monday when the premium renews, the AI engine checks the next 7-day weather forecast. If high disruption probability is detected, the premium adjusts upward — and workers are notified in advance.
+Example:
+  Forecast shows 3 days of heavy rain next week →
+  Standard tier premium increases from ₹57 → ₹68 for that week
+  Worker notified: "Higher disruption risk next week — premium adjusted to ₹68"
+No-Claim Bonus
+Workers who go consecutive weeks without a claim receive a rolling discount:
+Consecutive Claim-Free WeeksDiscount1–2 weeks0%3–4 weeks5%5–8 weeks10%9+ weeks20% (max)
+Mid-Week Enrollment
+Workers who sign up mid-week get prorated coverage from the day of signup. Premium charged = (remaining days / 7) × weekly premium.
+
+Payment & Renewal
+
+Auto-renewal: Every Monday via UPI AutoPay mandate (Razorpay Subscriptions)
+Grace period: 24 hours if AutoPay fails — coverage remains active, worker notified
+Cancellation: Worker can cancel anytime; no refund for current week's premium
+Upgrade/Downgrade: Tier changes apply from next Monday
