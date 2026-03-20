@@ -1,0 +1,96 @@
+Overview
+GigShield embeds AI/ML at three critical points in the platform:
+ModulePurposeModel TypeRisk ScoringCalculate personalized weekly premiumXGBoost (Gradient Boosted Trees)Disruption ForecastingPredict next week's disruption probabilityFacebook Prophet (Time Series)Fraud DetectionDetect anomalous or fake claimsIsolation Forest + Rule Engine
+All ML models are served via a FastAPI microservice (Python), called by the Node.js backend.
+
+Module 1: Dynamic Risk Scoring (Premium Calculation)
+Goal
+Generate a risk_score (0.8 – 2.0) for each worker that feeds directly into the premium formula.
+Model Type
+XGBoost / LightGBM — chosen for tabular data, handles missing values, fast inference
+Input Features
+FeatureSourceExamplezone_disruption_freq_3yrHistorical IMD + CPCB data42 events/year in Tambaramzone_flood_risk_indexIMD climate zone data0.85 (high flood zone)month_of_yearCalendar10 (October = monsoon)platform_typeOnboardingfood_deliveryavg_daily_hoursWorker declaration10 hoursyears_on_platformMock platform API2.5 yearshistorical_claim_rateGigShield DB (after launch)0 for new workers
+Output
+json{
+  "worker_id": "W-10042",
+  "risk_score": 1.38,
+  "risk_tier": "HIGH",
+  "recommended_coverage_tier": "Standard",
+  "confidence": 0.87
+}
+Training Data
+
+IMD historical weather data (2020–2025) per district
+CPCB AQI historical records per city
+Synthetic worker profiles (for MVP phase — 10,000 generated records)
+Real data to be incorporated post-launch via feedback loop
+
+
+Module 2: Disruption Forecasting (Predictive Pricing)
+Goal
+Forecast the probability of a disruptive event in the next 7 days for each operating zone. Used to:
+
+Dynamically adjust next week's premium on renewal day (Monday)
+Show insurer a predictive claims exposure view
+
+Model Type
+Facebook Prophet — excellent for seasonal patterns (monsoon cycles), holiday effects (bandh-prone periods)
+Input
+
+3-year daily weather history per zone (temperature, rainfall, AQI)
+Indian public holiday calendar (potential social disruption dates)
+IMD seasonal forecast data
+
+Output
+json{
+  "zone": "tambaram_chennai",
+  "week_starting": "2026-03-23",
+  "disruption_probability": 0.72,
+  "dominant_risk": "heavy_rain",
+  "expected_disruption_days": 2.1,
+  "premium_adjustment_factor": 1.18
+}
+Usage in Platform
+Every Sunday night:
+  → Forecast model runs for all active zones
+  → Premium adjustment factors computed
+  → Monday morning auto-renewal uses adjusted premium
+  → Workers notified if premium changes > 10%
+
+Module 3: Fraud Detection
+Goal
+Assign a fraud_score (0.0 – 1.0) to every claim. High scores trigger review or auto-rejection.
+Model Type
+Isolation Forest (unsupervised anomaly detection) + Rule-based pre-filter
+Input Features
+FeatureSignalgps_in_affected_zoneBoolean — is worker's last GPS ping inside disrupted polygon?platform_active_pre_eventWas worker logged in and active 2 hrs before trigger?claim_frequency_7dHow many claims in last 7 days vs. zone peer average?device_id_sharedIs this device linked to multiple worker accounts?upi_account_age_daysVery new UPI account = higher suspiciontime_since_enrollmentBrand new policy + immediate claim = flagpeer_claim_rate_deltaWorker's claim rate vs. peers in same zone
+Decision Thresholds
+Fraud ScoreAction0.0 – 0.4✅ AUTO APPROVE — payout initiated immediately0.4 – 0.7🟡 APPROVE with monitoring flag — payout proceeds, account watched0.7 – 0.9🔴 QUEUE for human review — payout held up to 4 hours0.9 – 1.0❌ AUTO REJECT — worker notified, fraud score recorded
+Output
+json{
+  "claim_id": "CLM-20045",
+  "fraud_score": 0.23,
+  "decision": "AUTO_APPROVE",
+  "flags": [],
+  "processing_time_ms": 340
+}
+
+ML Serving Architecture
+Node.js Backend
+      │
+      │  POST /ml/risk-score
+      │  POST /ml/fraud-check
+      │  POST /ml/forecast
+      ▼
+FastAPI ML Service (Python, port 8000)
+      │
+      ├── /risk-score   → XGBoost model inference
+      ├── /fraud-check  → Isolation Forest inference
+      └── /forecast     → Prophet model inference
+            │
+            └── Models loaded from /models/ directory
+                (MLflow-tracked, versioned)
+
+Retraining Strategy
+ModelRetrain FrequencyTriggerRisk ScoringMonthlyNew IMD/AQI data availableForecastingWeeklyRolling 7-day forecast refreshFraud DetectionBi-weeklyNew labeled fraud cases from human review queue
+
