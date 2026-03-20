@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GigShield — AI Parametric Insurance Demo</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',sans-serif;background:#0F2744;color:#e2e8f0;min-height:100vh}
+  .nav{background:#0a1929;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #F5A623}
+  .logo{font-size:22px;font-weight:700;color:#F5A623}
+  .logo span{color:#fff}
+  .nav-links{display:flex;gap:8px}
+  .nav-btn{padding:6px 14px;border-radius:20px;border:1px solid #1e3a5f;background:transparent;color:#94a3b8;font-size:12px;cursor:pointer;transition:all 0.2s}
+  .nav-btn.active,.nav-btn:hover{background:#F5A623;color:#0F2744;border-color:#F5A623;font-weight:600}
+  .page{display:none;padding:24px;max-width:900px;margin:0 auto}
+  .page.active{display:block}
+  .hero{text-align:center;padding:40px 20px 30px}
+  .hero h1{font-size:48px;font-weight:800;color:#fff;margin-bottom:8px}
+  .hero h1 span{color:#F5A623}
+  .hero p{font-size:18px;color:#94a3b8;margin-bottom:24px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}
+  .stat{background:#1a3a5c;border-radius:12px;padding:16px;text-align:center;border:1px solid #1e3a5f}
+  .stat-num{font-size:28px;font-weight:700;color:#F5A623}
+  .stat-label{font-size:11px;color:#64748b;margin-top:4px}
+  .card{background:#1a3a5c;border-radius:12px;padding:20px;margin-bottom:16px;border:1px solid #1e3a5f}
+  .card h3{font-size:14px;color:#F5A623;font-weight:600;margin-bottom:14px;text-transform:uppercase;letter-spacing:0.05em}
+  .form-group{margin-bottom:14px}
+  .form-group label{display:block;font-size:13px;color:#94a3b8;margin-bottom:6px}
+  .form-group input,.form-group select{width:100%;padding:10px 12px;background:#0F2744;border:1px solid #1e3a5f;border-radius:8px;color:#e2e8f0;font-size:14px;outline:none}
+  .form-group input:focus,.form-group select:focus{border-color:#F5A623}
+  .form-group select option{background:#0F2744}
+  .btn{padding:12px 24px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;width:100%}
+  .btn-gold{background:#F5A623;color:#0F2744}
+  .btn-gold:hover{background:#d4891c}
+  .btn-outline{background:transparent;border:1px solid #F5A623;color:#F5A623;margin-top:8px}
+  .btn-outline:hover{background:#F5A623;color:#0F2744}
+  .tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+  .tier{background:#0F2744;border-radius:10px;padding:16px;border:1px solid #1e3a5f;cursor:pointer;transition:all 0.2s;text-align:center}
+  .tier:hover,.tier.selected{border-color:#F5A623;background:#132840}
+  .tier.selected{border-width:2px}
+  .tier-name{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;margin-bottom:6px}
+  .tier-price{font-size:24px;font-weight:700;color:#F5A623}
+  .tier-cover{font-size:11px;color:#64748b;margin-top:4px}
+  .trigger-list{display:flex;flex-direction:column;gap:10px}
+  .trigger{background:#0F2744;border-radius:10px;padding:14px;border:1px solid #1e3a5f;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.2s}
+  .trigger:hover{border-color:#F5A623}
+  .trigger-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .trigger-info{flex:1}
+  .trigger-name{font-size:14px;font-weight:600;color:#fff}
+  .trigger-cond{font-size:11px;color:#64748b;margin-top:2px}
+  .trigger-pct{font-size:16px;font-weight:700;color:#F5A623}
+  .simulate-btn{padding:6px 14px;border-radius:6px;border:1px solid #F5A623;background:transparent;color:#F5A623;font-size:12px;cursor:pointer;flex-shrink:0}
+  .simulate-btn:hover{background:#F5A623;color:#0F2744}
+  .alert-box{background:#132840;border:1px solid #F5A623;border-radius:10px;padding:16px;margin-top:16px;display:none}
+  .alert-box.show{display:block}
+  .alert-title{font-size:14px;font-weight:600;color:#F5A623;margin-bottom:8px}
+  .progress-track{background:#0F2744;border-radius:6px;height:8px;margin:8px 0;overflow:hidden}
+  .progress-fill{height:100%;background:#F5A623;border-radius:6px;width:0%;transition:width 0.5s}
+  .steps{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+  .step-item{display:flex;gap:8px;align-items:center;font-size:12px;color:#64748b}
+  .step-item.done{color:#1D9E75}
+  .step-dot{width:16px;height:16px;border-radius:50%;border:1px solid #1e3a5f;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
+  .step-dot.done{background:#1D9E75;border-color:#1D9E75;color:#fff}
+  .step-dot.active{background:#F5A623;border-color:#F5A623;color:#0F2744}
+  .payout-badge{background:#1D9E75;color:#fff;border-radius:8px;padding:12px 16px;text-align:center;margin-top:12px;display:none}
+  .payout-badge.show{display:block}
+  .payout-badge .amount{font-size:28px;font-weight:700}
+  .payout-badge .label{font-size:12px;opacity:0.8;margin-top:2px}
+  .claim-list{display:flex;flex-direction:column;gap:8px}
+  .claim-item{background:#0F2744;border-radius:8px;padding:12px;border:1px solid #1e3a5f;display:flex;align-items:center;gap:12px}
+  .claim-status{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600}
+  .claim-status.paid{background:#E1F5EE;color:#085041}
+  .claim-status.review{background:#FAEEDA;color:#633806}
+  .claim-status.rejected{background:#FCEBEB;color:#791F1F}
+  .dashboard-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+  .metric{background:#1a3a5c;border-radius:10px;padding:16px;border:1px solid #1e3a5f}
+  .metric-val{font-size:26px;font-weight:700;color:#F5A623}
+  .metric-label{font-size:11px;color:#64748b;margin-top:4px}
+  .fraud-meter{background:#0F2744;border-radius:8px;padding:12px;border:1px solid #1e3a5f;margin:8px 0}
+  .fraud-bar-bg{background:#1e3a5f;border-radius:4px;height:10px;margin:8px 0}
+  .fraud-bar{height:100%;border-radius:4px;transition:width 0.8s}
+  .tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;margin:2px}
+  .tag-green{background:#E1F5EE;color:#085041}
+  .tag-gold{background:#FAEEDA;color:#633806}
+  .tag-red{background:#FCEBEB;color:#791F1F}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .section-title{font-size:22px;font-weight:700;color:#fff;margin-bottom:4px}
+  .section-sub{font-size:13px;color:#64748b;margin-bottom:20px}
+  .success-msg{background:#0a2a1a;border:1px solid #1D9E75;border-radius:8px;padding:12px;margin-top:10px;font-size:13px;color:#5DCAA5;display:none}
+  .success-msg.show{display:block}
+  footer{text-align:center;padding:24px;color:#475569;font-size:12px;border-top:1px solid #1e3a5f;margin-top:32px}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="logo">🛡 Gig<span>Shield</span></div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="showPage('home')">Home</button>
+    <button class="nav-btn" onclick="showPage('onboard')">Onboarding</button>
+    <button class="nav-btn" onclick="showPage('policy')">Policy</button>
+    <button class="nav-btn" onclick="showPage('triggers')">Triggers</button>
+    <button class="nav-btn" onclick="showPage('dashboard')">Dashboard</button>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <h1>Gig<span>Shield</span></h1>
+    <p>AI-Powered Parametric Income Insurance for India's Delivery Partners</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-gold" style="width:auto;padding:12px 28px" onclick="showPage('onboard')">Try Demo — Enroll Now</button>
+      <button class="btn btn-outline" style="width:auto;padding:12px 28px" onclick="showPage('triggers')">Simulate a Trigger</button>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-num">5M+</div><div class="stat-label">Delivery partners</div></div>
+    <div class="stat"><div class="stat-num">₹0</div><div class="stat-label">Current protection</div></div>
+    <div class="stat"><div class="stat-num">30%</div><div class="stat-label">Income at risk</div></div>
+    <div class="stat"><div class="stat-num">&lt;15min</div><div class="stat-label">Payout target</div></div>
+  </div>
+  <div class="card">
+    <h3>How It Works</h3>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <div style="text-align:center;padding:12px">
+        <div style="font-size:32px;margin-bottom:8px">📱</div>
+        <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px">1. Enroll</div>
+        <div style="font-size:11px;color:#64748b">Register in 60 seconds. AI calculates your risk score and weekly premium.</div>
+      </div>
+      <div style="text-align:center;padding:12px">
+        <div style="font-size:32px;margin-bottom:8px">⚡</div>
+        <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px">2. Get Protected</div>
+        <div style="font-size:11px;color:#64748b">5 automated triggers monitor weather, AQI, and social disruptions 24/7.</div>
+      </div>
+      <div style="text-align:center;padding:12px">
+        <div style="font-size:32px;margin-bottom:8px">💸</div>
+        <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px">3. Auto Payout</div>
+        <div style="font-size:11px;color:#64748b">Trigger fires → fraud check → UPI credit in under 15 minutes. Zero forms.</div>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:8px">
+    <div style="font-size:11px;color:#475569">Built by Team 007 · SRM University · Guidewire DEVTrails 2026</div>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<div class="page" id="page-onboard">
+  <div class="section-title">Worker Onboarding</div>
+  <div class="section-sub">Register in under 60 seconds — AI profiles your risk automatically</div>
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <h3>Personal Details</h3>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="name" placeholder="e.g. Ravi Kumar" value="Ravi Kumar">
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="phone" placeholder="+91 9999900001" value="+91 9999900001">
+        </div>
+        <div class="form-group">
+          <label>Delivery Platform</label>
+          <select id="platform">
+            <option>Swiggy</option>
+            <option>Zomato</option>
+            <option>Blinkit</option>
+            <option>Amazon</option>
+            <option>Zepto</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Operating Zone (Pincode)</label>
+          <select id="zone">
+            <option value="600045">600045 — Tambaram, Chennai (High Risk)</option>
+            <option value="600020">600020 — Adyar, Chennai (Medium Risk)</option>
+            <option value="600040">600040 — Anna Nagar, Chennai (Low Risk)</option>
+            <option value="600091">600091 — Velachery, Chennai (Medium Risk)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Income Details</h3>
+        <div class="form-group">
+          <label>Average Weekly Earnings (₹)</label>
+          <input type="number" id="weekly" placeholder="3800" value="3800">
+        </div>
+        <div class="form-group">
+          <label>Average Daily Working Hours</label>
+          <select id="hours">
+            <option>6 hours</option>
+            <option selected>8 hours</option>
+            <option>10 hours</option>
+            <option>12 hours</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>UPI ID</label>
+          <input type="text" placeholder="ravi@upi" value="ravi@upi">
+        </div>
+        <button class="btn btn-gold" onclick="runRiskScore()">Calculate My Risk Score →</button>
+      </div>
+      <div class="card" id="risk-result" style="display:none">
+        <h3>AI Risk Profile</h3>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div>
+            <div style="font-size:11px;color:#64748b">Risk Score</div>
+            <div style="font-size:32px;font-weight:700;color:#F5A623" id="risk-score-val">1.38</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:11px;color:#64748b">Risk Tier</div>
+            <div style="font-size:18px;font-weight:700;color:#fff" id="risk-tier-val">HIGH</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:4px">Risk Factors</div>
+        <div id="risk-tags"></div>
+        <div style="margin-top:12px;font-size:12px;color:#5DCAA5">✓ Profile saved. Select your coverage tier below.</div>
+        <button class="btn btn-outline" onclick="showPage('policy')" style="margin-top:10px">Choose Policy Tier →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POLICY -->
+<div class="page" id="page-policy">
+  <div class="section-title">Choose Your Coverage</div>
+  <div class="section-sub">Weekly premium · Auto-renews every Monday · Cancel anytime</div>
+  <div class="tier-grid">
+    <div class="tier" onclick="selectTier(this,'basic',29,500)">
+      <div class="tier-name">Basic</div>
+      <div class="tier-price">₹29<span style="font-size:12px;color:#64748b">/week</span></div>
+      <div class="tier-cover">Covers up to ₹500/week</div>
+      <div style="font-size:10px;color:#64748b;margin-top:6px">Part-time · Low risk zones</div>
+    </div>
+    <div class="tier selected" onclick="selectTier(this,'standard',57,1000)">
+      <div class="tier-name" style="color:#F5A623">★ Standard</div>
+      <div class="tier-price">₹57<span style="font-size:12px;color:#64748b">/week</span></div>
+      <div class="tier-cover">Covers up to ₹1,000/week</div>
+      <div style="font-size:10px;color:#F5A623;margin-top:6px">Recommended for you</div>
+    </div>
+    <div class="tier" onclick="selectTier(this,'pro',89,2000)">
+      <div class="tier-name">Pro</div>
+      <div class="tier-price">₹89<span style="font-size:12px;color:#64748b">/week</span></div>
+      <div class="tier-cover">Covers up to ₹2,000/week</div>
+      <div style="font-size:10px;color:#64748b;margin-top:6px">Full-time · Flood-prone zones</div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Policy Summary</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div><div style="font-size:11px;color:#64748b">Worker</div><div style="font-size:14px;color:#fff">Ravi Kumar · Swiggy</div></div>
+      <div><div style="font-size:11px;color:#64748b">Zone</div><div style="font-size:14px;color:#fff">Tambaram, Chennai</div></div>
+      <div><div style="font-size:11px;color:#64748b">Selected Tier</div><div style="font-size:14px;font-weight:700;color:#F5A623" id="sel-tier">Standard</div></div>
+      <div><div style="font-size:11px;color:#64748b">Weekly Premium</div><div style="font-size:14px;font-weight:700;color:#F5A623" id="sel-price">₹57</div></div>
+      <div><div style="font-size:11px;color:#64748b">Max Weekly Payout</div><div style="font-size:14px;color:#fff" id="sel-cover">₹1,000</div></div>
+      <div><div style="font-size:11px;color:#64748b">Renewal</div><div style="font-size:14px;color:#fff">Every Monday · UPI AutoPay</div></div>
+    </div>
+    <button class="btn btn-gold" onclick="activatePolicy()">Activate Policy — Pay ₹57 via UPI</button>
+    <div class="success-msg" id="policy-success">
+      ✅ Policy activated! Your coverage starts immediately. Premium of ₹57 debited via UPI AutoPay. You are now protected against 5 disruption triggers.
+    </div>
+  </div>
+  <div class="card">
+    <h3>No-Claim Bonus</h3>
+    <div style="font-size:13px;color:#94a3b8;line-height:1.6">
+      Go claim-free for consecutive weeks and earn discounts automatically:<br>
+      <span style="color:#F5A623">3–4 weeks clean → 5% off</span> &nbsp;·&nbsp;
+      <span style="color:#F5A623">5–8 weeks clean → 10% off</span> &nbsp;·&nbsp;
+      <span style="color:#F5A623">9+ weeks clean → 20% off (max)</span>
+    </div>
+  </div>
+</div>
+
+<!-- TRIGGERS -->
+<div class="page" id="page-triggers">
+  <div class="section-title">Live Trigger Simulator</div>
+  <div class="section-sub">Click "Simulate" on any trigger to see the full automated claim flow in real time</div>
+  <div class="trigger-list">
+    <div class="trigger">
+      <div class="trigger-icon" style="background:#1a3a5e">🌧</div>
+      <div class="trigger-info">
+        <div class="trigger-name">T-01 · Heavy Rain</div>
+        <div class="trigger-cond">Rainfall &gt;35mm/hr · OpenWeatherMap + IMD RSS</div>
+      </div>
+      <div class="trigger-pct">70%</div>
+      <button class="simulate-btn" onclick="simulate('T-01','Heavy Rain',70,420)">Simulate</button>
+    </div>
+    <div class="trigger">
+      <div class="trigger-icon" style="background:#1a3a5e">🌊</div>
+      <div class="trigger-info">
+        <div class="trigger-name">T-02 · Flood Alert</div>
+        <div class="trigger-cond">IMD Flood Alert Level 2+ · IMD API</div>
+      </div>
+      <div class="trigger-pct" style="color:#1D9E75">100%</div>
+      <button class="simulate-btn" onclick="simulate('T-02','Flood Alert',100,633)">Simulate</button>
+    </div>
+    <div class="trigger">
+      <div class="trigger-icon" style="background:#4a2010">🌡</div>
+      <div class="trigger-info">
+        <div class="trigger-name">T-03 · Extreme Heat</div>
+        <div class="trigger-cond">Temp &gt;42°C + Heat Index &gt;50°C for 3+ hrs</div>
+      </div>
+      <div class="trigger-pct">50%</div>
+      <button class="simulate-btn" onclick="simulate('T-03','Extreme Heat',50,200)">Simulate</button>
+    </div>
+    <div class="trigger">
+      <div class="trigger-icon" style="background:#1a3a1a">🌫</div>
+      <div class="trigger-info">
+        <div class="trigger-name">T-04 · Severe AQI</div>
+        <div class="trigger-cond">AQI &gt;300 (Severe) for 4+ hrs · OpenAQ / CPCB</div>
+      </div>
+      <div class="trigger-pct">60%</div>
+      <button class="simulate-btn" onclick="simulate('T-04','Severe AQI',60,316)">Simulate</button>
+    </div>
+    <div class="trigger">
+      <div class="trigger-icon" style="background:#3a1a2a">🚫</div>
+      <div class="trigger-info">
+        <div class="trigger-name">T-05 · Bandh / Curfew</div>
+        <div class="trigger-cond">NewsAPI + TomTom Traffic cross-validated</div>
+      </div>
+      <div class="trigger-pct">80%</div>
+      <button class="simulate-btn" onclick="simulate('T-05','Bandh / Curfew',80,506)">Simulate</button>
+    </div>
+  </div>
+
+  <div class="alert-box" id="sim-box">
+    <div class="alert-title" id="sim-title">🌧 Heavy Rain detected in Tambaram, Chennai</div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:10px" id="sim-sub">Rainfall: 52mm/hr · IMD Red Alert active · 3 hours duration</div>
+    <div class="progress-track"><div class="progress-fill" id="sim-prog"></div></div>
+    <div class="steps" id="sim-steps">
+      <div class="step-item" id="st1"><div class="step-dot" id="sd1">1</div>Detecting affected workers in zone 600045...</div>
+      <div class="step-item" id="st2"><div class="step-dot" id="sd2">2</div>Running 3-layer fraud check (GPS · Activity · ML)...</div>
+      <div class="step-item" id="st3"><div class="step-dot" id="sd3">3</div>Fraud score: 0.08 — AUTO APPROVED</div>
+      <div class="step-item" id="st4"><div class="step-dot" id="sd4">4</div>Calculating payout amount...</div>
+      <div class="step-item" id="st5"><div class="step-dot" id="sd5">5</div>Initiating UPI transfer via Razorpay sandbox...</div>
+    </div>
+    <div class="payout-badge" id="payout-badge">
+      <div class="label">💸 Payout Credited to ravi@upi</div>
+      <div class="amount" id="payout-amount">₹420</div>
+      <div class="label" style="margin-top:4px">Claim #CLM-20045 · Processed in 8 min 23 sec</div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page" id="page-dashboard">
+  <div class="section-title">Analytics Dashboard</div>
+  <div class="section-sub">Worker view and insurer admin view</div>
+
+  <div class="card">
+    <h3>My Coverage — Ravi Kumar</h3>
+    <div class="dashboard-grid">
+      <div class="metric"><div class="metric-val">✅ Active</div><div class="metric-label">Policy Status — Standard Tier</div></div>
+      <div class="metric"><div class="metric-val">₹57</div><div class="metric-label">Premium paid this week</div></div>
+      <div class="metric"><div class="metric-val">₹800</div><div class="metric-label">Payout remaining this week</div></div>
+      <div class="metric"><div class="metric-val">₹1,240</div><div class="metric-label">Earnings protected this month</div></div>
+    </div>
+    <h3 style="margin-bottom:10px">Recent Claims</h3>
+    <div class="claim-list">
+      <div class="claim-item">
+        <div style="font-size:18px">🌧</div>
+        <div style="flex:1"><div style="font-size:13px;color:#fff;font-weight:500">Heavy Rain · Mar 19</div><div style="font-size:11px;color:#64748b">Tambaram zone · 3 hrs</div></div>
+        <div style="font-size:15px;font-weight:700;color:#F5A623">₹420</div>
+        <span class="claim-status paid">PAID</span>
+      </div>
+      <div class="claim-item">
+        <div style="font-size:18px">🌡</div>
+        <div style="flex:1"><div style="font-size:13px;color:#fff;font-weight:500">Extreme Heat · Mar 12</div><div style="font-size:11px;color:#64748b">Tambaram zone · 4 hrs</div></div>
+        <div style="font-size:15px;font-weight:700;color:#F5A623">₹320</div>
+        <span class="claim-status paid">PAID</span>
+      </div>
+      <div class="claim-item">
+        <div style="font-size:18px">🌫</div>
+        <div style="flex:1"><div style="font-size:13px;color:#fff;font-weight:500">Severe AQI · Mar 5</div><div style="font-size:11px;color:#64748b">Tambaram zone · 5 hrs</div></div>
+        <div style="font-size:15px;font-weight:700;color:#F5A623">₹200</div>
+        <span class="claim-status paid">PAID</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Insurer Admin View</h3>
+    <div class="dashboard-grid">
+      <div class="metric"><div class="metric-val">8,420</div><div class="metric-label">Active policies this week</div></div>
+      <div class="metric"><div class="metric-val">₹4.37L</div><div class="metric-label">Premiums collected</div></div>
+      <div class="metric"><div class="metric-val">43.2%</div><div class="metric-label">Loss ratio (target &lt;55%)</div></div>
+      <div class="metric"><div class="metric-val">3</div><div class="metric-label">Claims in fraud review queue</div></div>
+    </div>
+    <h3 style="margin-bottom:10px">Fraud Detection Samples</h3>
+    <div class="fraud-meter">
+      <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#fff">CLM-20041 · GPS mismatch detected</span><span style="color:#E24B4A;font-weight:600">Score: 0.82</span></div>
+      <div class="fraud-bar-bg"><div class="fraud-bar" style="width:82%;background:#E24B4A"></div></div>
+      <div><span class="tag tag-red">GPS Spoof</span><span class="tag tag-gold">New Policy</span></div>
+    </div>
+    <div class="fraud-meter">
+      <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#fff">CLM-20038 · Normal claim</span><span style="color:#1D9E75;font-weight:600">Score: 0.08</span></div>
+      <div class="fraud-bar-bg"><div class="fraud-bar" style="width:8%;background:#1D9E75"></div></div>
+      <div><span class="tag tag-green">Auto Approved</span><span class="tag tag-green">GPS Valid</span></div>
+    </div>
+    <div class="fraud-meter">
+      <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#fff">CLM-20035 · High claim frequency</span><span style="color:#F5A623;font-weight:600">Score: 0.71</span></div>
+      <div class="fraud-bar-bg"><div class="fraud-bar" style="width:71%;background:#F5A623"></div></div>
+      <div><span class="tag tag-gold">Under Review</span><span class="tag tag-gold">4 claims/week</span></div>
+    </div>
+  </div>
+</div>
+
+<footer>🛡 GigShield · Team 007 · SRM University · Guidewire DEVTrails 2026 · Phase 1</footer>
+
+<script>
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const map={home:0,onboard:1,policy:2,triggers:3,dashboard:4};
+  document.querySelectorAll('.nav-btn')[map[id]].classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function runRiskScore(){
+  const zone=document.getElementById('zone').value;
+  const hours=document.getElementById('hours').value;
+  const month=new Date().getMonth()+1;
+  const zoneRisk={'600045':1.4,'600020':1.1,'600040':0.9,'600091':1.2};
+  const seasonRisk={10:1.4,11:1.4,9:1.3,6:1.3,7:1.3,8:1.3,4:1.1,5:1.2,1:1.0,2:1.0,3:1.0,12:1.1};
+  const hrMult=hours.includes('10')?1.15:hours.includes('12')?1.25:hours.includes('6')?0.9:1.0;
+  let score=((zoneRisk[zone]||1.0)*(seasonRisk[month]||1.0)*hrMult).toFixed(2);
+  score=Math.max(0.8,Math.min(2.0,score));
+  document.getElementById('risk-score-val').textContent=score;
+  const tier=score<1.1?'LOW':score<1.5?'MEDIUM':'HIGH';
+  document.getElementById('risk-tier-val').textContent=tier;
+  const tags=document.getElementById('risk-tags');
+  const zoneNames={'600045':'High flood zone','600020':'Moderate zone','600040':'Low risk zone','600091':'Moderate zone'};
+  const mon=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month-1];
+  tags.innerHTML=`<span class="tag tag-gold">${zoneNames[zone]||'Zone risk'}</span><span class="tag tag-gold">${mon} season</span><span class="tag tag-gold">${hours} exposure</span>`;
+  document.getElementById('risk-result').style.display='block';
+}
+
+function selectTier(el,name,price,cover){
+  document.querySelectorAll('.tier').forEach(t=>t.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('sel-tier').textContent=name.charAt(0).toUpperCase()+name.slice(1);
+  document.getElementById('sel-price').textContent='₹'+price;
+  document.getElementById('sel-cover').textContent='₹'+cover.toLocaleString();
+}
+
+function activatePolicy(){
+  document.getElementById('policy-success').classList.add('show');
+}
+
+let simRunning=false;
+function simulate(id,name,pct,amount){
+  if(simRunning)return;
+  simRunning=true;
+  const box=document.getElementById('sim-box');
+  box.classList.add('show');
+  document.getElementById('sim-title').textContent='⚡ '+name+' detected in Tambaram, Chennai';
+  document.getElementById('sim-sub').textContent=id+' trigger fired · '+pct+'% payout rate · Tambaram zone 600045';
+  document.getElementById('payout-amount').textContent='₹'+amount;
+  document.getElementById('payout-badge').classList.remove('show');
+  [1,2,3,4,5].forEach(n=>{
+    document.getElementById('st'+n).classList.remove('done');
+    document.getElementById('sd'+n).classList.remove('done','active');
+    document.getElementById('sd'+n).textContent=n;
+  });
+  document.getElementById('sim-prog').style.width='0%';
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  const delays=[800,1800,3000,4200,5500];
+  const prog=[20,40,60,80,100];
+  delays.forEach((d,i)=>{
+    setTimeout(()=>{
+      document.getElementById('sd'+((i>0)?i:'x'+(i)));
+      if(i>0){document.getElementById('st'+(i)).classList.add('done');document.getElementById('sd'+(i)).classList.remove('active');document.getElementById('sd'+(i)).classList.add('done');document.getElementById('sd'+(i)).textContent='✓';}
+      document.getElementById('sd'+(i+1)).classList.add('active');
+      document.getElementById('sim-prog').style.width=prog[i]+'%';
+      if(i===4){
+        document.getElementById('st5').classList.add('done');
+        document.getElementById('sd5').classList.remove('active');
+        document.getElementById('sd5').classList.add('done');
+        document.getElementById('sd5').textContent='✓';
+        setTimeout(()=>{document.getElementById('payout-badge').classList.add('show');simRunning=false;},600);
+      }
+    },d);
+  });
+}
+</script>
+</body>
+</html>
