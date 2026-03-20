@@ -1,0 +1,176 @@
+Integration Overview
+APIPurposeTriggerModeOpenWeatherMapRain + Heat detectionT-01, T-03Live (free tier)IMD RSS FeedOfficial alert validationT-01, T-02Live scrapingOpenAQAir quality / AQIT-04Live (free tier)NewsAPIBandh / curfew detectionT-05Free tierTomTom TrafficRoad congestion validationT-05Mock / free tierPlatform APIOrder volume drop signalT-05SimulatedRazorpayPayout + UPI AutoPayPayoutsSandboxFirebase FCMPush notificationsAlertsFree tierMSG91SMS OTPAuthPaid (low cost)
+
+1. OpenWeatherMap API
+Used for: T-01 (Heavy Rain) and T-03 (Extreme Heat)
+javascript// Fetch current weather for a zone
+const fetchWeather = async (lat, lon) => {
+  const response = await fetch(
+    `https://api.openweathermap.org/data/2.5/weather` +
+    `?lat=${lat}&lon=${lon}&appid=${process.env.OWM_API_KEY}&units=metric`
+  );
+  const data = await response.json();
+  return {
+    rainfall_1h: data.rain?.['1h'] || 0,          // mm in last hour
+    temperature: data.main.temp,                    // Celsius
+    feels_like:  data.main.feels_like,             // Heat Index proxy
+    condition:   data.weather[0].main,             // 'Rain', 'Thunderstorm', etc.
+  };
+};
+
+// T-01 check
+if (weather.rainfall_1h > 35 || weather.condition === 'Thunderstorm') {
+  await initiateTrigger('T-01', zone, affectedWorkers);
+}
+
+// T-03 check
+if (weather.temperature > 42 && weather.feels_like > 50) {
+  heatHoursCounter[zone]++;
+  if (heatHoursCounter[zone] >= 3) {
+    await initiateTrigger('T-03', zone, affectedWorkers);
+  }
+}
+Rate limit: 60 calls/min on free tier — well within our 15-min polling window.
+
+2. IMD RSS Feed
+Used for: T-01 (Rain alert validation) and T-02 (Flood alert)
+javascriptconst Parser = require('rss-parser');
+const parser = new Parser();
+
+const fetchIMDAlerts = async () => {
+  const feed = await parser.parseURL('https://mausam.imd.gov.in/imd_latest/contents/warning.xml');
+  return feed.items.map(item => ({
+    district: item.title,
+    alert_level: extractAlertLevel(item.description),  // 'Green' | 'Yellow' | 'Orange' | 'Red'
+    category: extractCategory(item.description),        // 'Rain' | 'Flood' | 'Heat'
+  }));
+};
+
+// T-02 flood check
+const floodAlerts = alerts.filter(a => a.category === 'Flood' && a.alert_level !== 'Green');
+if (floodAlerts.some(a => workerZoneDistricts.includes(a.district))) {
+  await initiateTrigger('T-02', zone, affectedWorkers);
+}
+
+3. OpenAQ API
+Used for: T-04 (Severe Air Pollution)
+javascriptconst fetchAQI = async (lat, lon) => {
+  const response = await fetch(
+    `https://api.openaq.org/v2/measurements` +
+    `?coordinates=${lat},${lon}&radius=10000&parameter=pm25&limit=5`,
+    { headers: { 'X-API-Key': process.env.OPENAQ_API_KEY } }
+  );
+  const data = await response.json();
+  const pm25 = data.results[0]?.value || 0;
+  return calculateAQI(pm25);   // Convert PM2.5 µg/m³ → AQI index
+};
+
+// AQI conversion (PM2.5 → AQI, CPCB standard)
+const calculateAQI = (pm25) => {
+  if (pm25 <= 30)  return Math.round((pm25 / 30) * 50);
+  if (pm25 <= 60)  return Math.round(50 + ((pm25 - 30) / 30) * 50);
+  if (pm25 <= 90)  return Math.round(100 + ((pm25 - 60) / 30) * 100);
+  if (pm25 <= 120) return Math.round(200 + ((pm25 - 90) / 30) * 100);
+  if (pm25 <= 250) return Math.round(300 + ((pm25 - 120) / 130) * 100);
+  return 400 + Math.round((pm25 - 250) / 130 * 100);
+};
+
+// T-04 check
+if (aqi > 300) {
+  aqiHoursCounter[zone]++;
+  if (aqiHoursCounter[zone] >= 4 * 4) {  // 4 polls × 15min = 1 hour
+    await initiateTrigger('T-04', zone, affectedWorkers);
+  }
+}
+
+4. NewsAPI + TomTom (T-05 Social Disruption)
+javascript// Step 1: Check news for bandh/curfew keywords
+const fetchDisruptionNews = async (city) => {
+  const response = await fetch(
+    `https://newsapi.org/v2/everything` +
+    `?q=bandh+OR+curfew+OR+hartal+OR+strike+${city}` +
+    `&from=${todayISO}&sortBy=publishedAt&apiKey=${process.env.NEWS_API_KEY}`
+  );
+  const data = await response.json();
+  return data.articles.length > 0;
+};
+
+// Step 2: Cross-validate with traffic congestion (TomTom mock in MVP)
+const fetchTrafficIndex = async (zone) => {
+  // MVP: returns mock value based on zone + time of day
+  // Phase 3: real TomTom API call
+  return mockTrafficIndex[zone] || 0.3;
+};
+
+// T-05 fires only if BOTH signals confirm
+const newsSignal    = await fetchDisruptionNews('Chennai');
+const trafficIndex  = await fetchTrafficIndex(zone);
+if (newsSignal && trafficIndex > 0.85) {
+  await initiateTrigger('T-05', zone, affectedWorkers);
+}
+
+5. Razorpay Sandbox (Payouts)
+javascriptconst Razorpay = require('razorpay');
+const razorpay = new Razorpay({
+  key_id:     process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+// Process a payout (sandbox mode)
+const processPayout = async (worker, claim) => {
+  const payout = await razorpay.payouts.create({
+    account_number: process.env.RAZORPAY_ACCOUNT_NUMBER,
+    fund_account_id: worker.razorpay_fund_account_id,
+    amount:   Math.round(claim.payout_amount * 100),  // paise
+    currency: 'INR',
+    mode:     'UPI',
+    purpose:  'payout',
+    narration: `GigShield Claim #${claim.id}`,
+  });
+  return payout;
+};
+
+// Set up weekly UPI AutoPay mandate
+const createSubscription = async (worker, tier) => {
+  const subscription = await razorpay.subscriptions.create({
+    plan_id:       TIER_PLAN_IDS[tier],
+    customer_notify: 1,
+    quantity:      1,
+    total_count:   52,  // 1 year of weekly payments
+    notes:         { worker_id: worker.id },
+  });
+  return subscription;
+};
+
+Environment Variables Required
+bash# .env file (copy from .env.example)
+
+# Weather
+OWM_API_KEY=your_openweathermap_key
+
+# Air Quality
+OPENAQ_API_KEY=your_openaq_key
+
+# News
+NEWS_API_KEY=your_newsapi_key
+
+# Payment
+RAZORPAY_KEY_ID=rzp_test_xxxxx
+RAZORPAY_KEY_SECRET=your_secret
+RAZORPAY_ACCOUNT_NUMBER=your_account
+
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/gigshield
+
+# Cache
+REDIS_URL=redis://localhost:6379
+
+# Auth
+JWT_SECRET=your_jwt_secret_min_32_chars
+
+# Notifications
+FCM_SERVER_KEY=your_firebase_server_key
+
+# SMS
+MSG91_API_KEY=your_msg91_key
+MSG91_TEMPLATE_ID=your_otp_template
