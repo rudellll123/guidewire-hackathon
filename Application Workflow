@@ -1,0 +1,68 @@
+End-to-End Platform Flow
+STEP 1 — ONBOARDING
+│
+├── Worker visits GigShield PWA (via WhatsApp link / QR code)
+├── Phone number entered → OTP verified
+├── Platform ID linked (Swiggy/Zomato partner ID)
+├── Operating zone selected (pincode / GPS polygon)
+├── Average weekly earning declared
+└── UPI ID / bank account added for payouts
+│
+▼
+STEP 2 — AI RISK PROFILING
+│
+├── ML model runs on worker profile:
+│   ├── Zone's historical disruption frequency
+│   ├── Current season / month (monsoon vs dry)
+│   ├── Historical working hours pattern
+│   └── Platform activity score (simulated API)
+└── Risk score generated (0.8 – 2.0 multiplier)
+│
+▼
+STEP 3 — POLICY CREATION
+│
+├── Worker sees AI-recommended coverage tier
+├── Three tiers displayed with weekly premium and max payout
+├── Worker selects tier and confirms
+└── Weekly UPI AutoPay mandate set up via Razorpay
+│
+▼
+STEP 4 — REAL-TIME TRIGGER MONITORING (Background — every 15 min)
+│
+├── Weather API polled → Rain / Heat / Flood thresholds checked
+├── AQI API polled → Pollution severity checked per zone
+├── News + Traffic API polled → Bandh / curfew signals detected
+└── Platform API (mock) → Order volume drop signals
+│
+▼
+STEP 5 — AUTOMATIC CLAIM INITIATION (On threshold breach)
+│
+├── Fraud Layer 1: Is worker's GPS inside the disrupted zone polygon?
+├── Fraud Layer 2: Was worker active on platform 2 hours before event?
+├── Fraud Layer 3: Cross-validate with IMD station + peer claim rate
+└── Decision: AUTO APPROVE | FLAG FOR REVIEW | AUTO REJECT
+│
+▼
+STEP 6 — PAYOUT PROCESSING
+│
+├── Payout = Affected Hours × Avg Hourly Rate × Coverage Percentage
+├── Capped at policy tier's maximum daily payout
+├── Transferred via UPI / Razorpay sandbox
+└── Worker notified via SMS + in-app push notification
+│
+▼
+STEP 7 — DASHBOARD UPDATE
+│
+├── Worker view: Claim logged, payout shown, earnings protected updated
+└── Insurer view: Claim event recorded, loss ratio recalculated, fraud flags updated
+
+Key UX Principles
+PrincipleImplementationZero-touch for workerClaims auto-initiated — worker never needs to file anythingReal-time visibilityLive disruption alerts shown on worker dashboardTransparencyEvery claim shows trigger event, calculated payout, and statusSpeedTarget: trigger detected → payout in wallet < 15 minutesOffline-capablePolicy status and claim history cached for offline viewing
+
+User Journey Map
+Ravi opens app (30 sec onboarding)
+    → Sees "Active Policy — Standard ₹57/week"
+    → Tuesday 2 PM: Rain alert fires in Tambaram zone
+    → App shows: "🌧️ Heavy rain detected. Claim initiated."
+    → 8 minutes later: "₹420 credited to your UPI"
+    → Ravi continues his day — no forms, no calls, no waiting
