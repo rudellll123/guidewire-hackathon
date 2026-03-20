@@ -1,0 +1,209 @@
+Prerequisites
+ToolVersionInstallNode.js20 LTShttps://nodejs.orgPython3.10+https://python.orgPostgreSQL14+https://postgresql.orgRedis7+https://redis.ioDocker24+https://docker.com (optional but recommended)GitAnyhttps://git-scm.com
+
+Quick Start (Docker — Recommended)
+bash# 1. Clone the repository
+git clone https://github.com/[your-team]/gigshield-devtrails2026.git
+cd gigshield-devtrails2026
+
+# 2. Copy environment variables
+cp .env.example .env
+# Open .env and fill in your API keys (see API Integrations doc)
+
+# 3. Build and start all services
+docker-compose up --build
+
+# Services started:
+#   React PWA     → http://localhost:3000
+#   Express API   → http://localhost:5000
+#   FastAPI ML    → http://localhost:8000
+#   PostgreSQL    → localhost:5432
+#   Redis         → localhost:6379
+
+Manual Setup (Without Docker)
+Step 1: Frontend
+bashcd frontend
+npm install
+cp .env.example .env.local
+# Set VITE_API_URL=http://localhost:5000
+npm run dev
+# App runs on http://localhost:3000
+Step 2: Backend
+bashcd backend
+npm install
+cp .env.example .env
+# Fill in DATABASE_URL, REDIS_URL, JWT_SECRET, and API keys
+
+# Run database migrations
+npm run db:migrate
+
+# Seed demo data
+npm run db:seed
+
+# Start development server
+npm run dev
+# API runs on http://localhost:5000
+Step 3: ML Service
+bashcd ml
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Train models (uses synthetic data for MVP)
+python training/train_models.py
+
+# Start ML API server
+uvicorn serve:app --reload --port 8000
+# ML API runs on http://localhost:8000
+
+Environment Variables
+Create .env file in the project root (or per-service as shown above):
+bash# ── Weather & Environment ──────────────────────────────
+OWM_API_KEY=your_openweathermap_api_key
+OPENAQ_API_KEY=your_openaq_api_key
+NEWS_API_KEY=your_newsapi_org_key
+
+# ── Payment (Razorpay Sandbox) ─────────────────────────
+RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxxxxx
+RAZORPAY_KEY_SECRET=your_razorpay_test_secret
+RAZORPAY_ACCOUNT_NUMBER=your_account_number
+
+# ── Database ───────────────────────────────────────────
+DATABASE_URL=postgresql://gigshield:password@localhost:5432/gigshield_db
+
+# ── Cache & Queue ──────────────────────────────────────
+REDIS_URL=redis://localhost:6379
+
+# ── Auth ───────────────────────────────────────────────
+JWT_SECRET=your_secret_key_minimum_32_characters_long
+JWT_EXPIRY=15m
+REFRESH_TOKEN_EXPIRY=7d
+
+# ── Notifications ──────────────────────────────────────
+FCM_SERVER_KEY=your_firebase_cloud_messaging_server_key
+MSG91_API_KEY=your_msg91_api_key
+MSG91_TEMPLATE_ID=your_otp_template_id
+
+# ── ML Service ─────────────────────────────────────────
+ML_SERVICE_URL=http://localhost:8000
+
+# ── App ────────────────────────────────────────────────
+NODE_ENV=development
+PORT=5000
+FRONTEND_URL=http://localhost:3000
+
+Demo Credentials
+─── Worker Login ────────────────────────────
+Phone:  +91-9999900001
+OTP:    123456  (seeded demo OTP)
+
+─── Insurer / Admin Login ───────────────────
+Email:  admin@gigshield.in
+Password: Demo@2026!
+URL:    http://localhost:3000/admin
+
+Simulating a Disruption (Demo Mode)
+GigShield includes a demo trigger API for live demonstrations:
+bash# Simulate a Heavy Rain event in Tambaram zone
+curl -X POST http://localhost:5000/api/demo/trigger \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <admin_token>" \
+  -d '{
+    "trigger_id": "T-01",
+    "zone_pincode": "600045",
+    "zone_name": "Tambaram, Chennai",
+    "intensity": "red_alert",
+    "duration_hours": 3
+  }'
+
+# Expected response:
+# {
+#   "trigger_event_id": "EVT-xxxxx",
+#   "affected_workers": 42,
+#   "claims_initiated": 38,
+#   "claims_auto_approved": 35,
+#   "claims_in_review": 3,
+#   "total_payout_queued": "₹6,840",
+#   "estimated_completion": "8 minutes"
+# }
+You can watch the claims flow through in real-time on the insurer dashboard.
+
+Running Tests
+bash# Backend unit tests
+cd backend && npm test
+
+# ML model tests
+cd ml && python -m pytest tests/
+
+# Frontend component tests
+cd frontend && npm test
+
+Project Structure
+gigshield-devtrails2026/
+│
+├── README.md                        ← Main navigation hub
+├── docker-compose.yml               ← One-command full stack launch
+├── .env.example                     ← Environment variable template
+│
+├── docs/                            ← All 14 documentation files
+│   ├── 01-persona-and-scenarios.md
+│   ├── 02-application-workflow.md
+│   ├── 03-weekly-premium-model.md
+│   ├── 04-parametric-triggers.md
+│   ├── 05-ai-ml-plan.md
+│   ├── 06-fraud-detection.md
+│   ├── 07-tech-stack.md
+│   ├── 08-system-architecture.md
+│   ├── 09-development-roadmap.md
+│   ├── 10-api-integrations.md
+│   ├── 11-platform-justification.md
+│   ├── 12-financial-model.md
+│   ├── 13-analytics-dashboard.md
+│   └── 14-setup-and-installation.md ← This file
+│
+├── frontend/                        ← React + Vite PWA (Phase 2+)
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Onboarding/
+│   │   │   ├── Dashboard/
+│   │   │   ├── AdminDashboard/
+│   │   │   ├── Claims/
+│   │   │   └── Policy/
+│   │   ├── pages/
+│   │   ├── store/                   ← Zustand state management
+│   │   └── utils/
+│   ├── public/
+│   │   └── manifest.json            ← PWA manifest
+│   └── vite.config.js
+│
+├── backend/                         ← Express.js REST API (Phase 2+)
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── policy.js
+│   │   ├── claims.js
+│   │   ├── dashboard.js
+│   │   └── demo.js                  ← Demo trigger API
+│   ├── services/
+│   │   ├── parametricEngine.js      ← 15-min trigger polling
+│   │   ├── fraudDetection.js        ← Fraud score computation
+│   │   └── payoutService.js         ← Razorpay integration
+│   ├── models/                      ← Sequelize ORM models
+│   │   ├── Worker.js
+│   │   ├── Policy.js
+│   │   ├── Claim.js
+│   │   └── TriggerEvent.js
+│   ├── jobs/
+│   │   └── triggerPoller.js         ← Bull queue job
+│   └── migrations/                  ← Database migrations
+│
+└── ml/                              ← Python ML microservice (Phase 2+)
+    ├── serve.py                     ← FastAPI entry point
+    ├── models/
+    │   ├── risk_scoring.py
+    │   ├── fraud_detection.py
+    │   └── forecasting.py
+    ├── training/
+    │   ├── train_models.py
+    │   └── synthetic_data.py        ← Generate 10K worker records for training
+    ├── tests/
+    └── requirements.txt
