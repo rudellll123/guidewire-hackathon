@@ -1,0 +1,33 @@
+Chosen Persona: Food Delivery Partners (Zomato / Swiggy)
+Why Food Delivery?
+
+Highest outdoor exposure — riders spend 4–8 hours daily on roads
+Most sensitive to real-time weather (rain immediately halts deliveries)
+Largest gig worker pool in India (~5 million active delivery partners)
+Short delivery windows make per-hour income loss most financially painful
+Platform order volume drops directly and measurably during disruptions
+
+
+User Persona: Ravi, 28 — Swiggy Delivery Partner, Chennai
+📍 Zone         : Tambaram, Chennai
+⏰ Working Hours: 10 AM – 10 PM (10 hrs/day, 6 days/week)
+💰 Weekly Income: ₹3,500 – ₹4,200
+🏍️ Vehicle      : Two-wheeler (petrol)
+📱 Device       : Android mid-range, basic UPI literacy
+🌧️ Key Risks    : Northeast monsoon (Oct–Dec), heatwaves (Apr–Jun)
+
+Disruption Scenarios
+Scenario 1 — Heavy Rain (Environmental)
+FieldDetailEventIMD issues Red Alert for Chennai. Rainfall > 65mm in 3 hoursImpactRavi cannot ride safely. Platform order volume drops 80%. He loses ~₹600 for the dayGigShield ResponseRain trigger T-01 fires automatically. Claim initiated. ₹480 (80% of daily avg) credited to UPI within 30 minutes. Zero action needed from Ravi
+
+Scenario 2 — City-Wide Bandh (Social Disruption)
+FieldDetailEventUnplanned bandh declared in Chennai. Roads blocked, restaurants shutImpactZero deliveries possible for 8 hours. Weekly income loss ≈ ₹700GigShield ResponseCross-referenced with News API + Traffic API. Social trigger T-05 fires. Payout proportional to affected hours credited automatically
+
+Scenario 3 — Extreme Heat Alert (Environmental)
+FieldDetailEventIMD issues Heatwave alert. Temperature > 43°C, Heat Index > 52°CImpactOutdoor work becomes medically unsafe. Ravi stops working after 2 hoursGigShield ResponseHeat trigger T-03 fires. Payout calculated for estimated lost hours (5 hrs × avg hourly rate). Deposited to wallet
+
+Scenario 4 — Severe Air Pollution (Environmental)
+FieldDetailEventAQI spikes to 380 (Severe category) in Ravi's operating zoneImpactRavi reduces hours by 60% to protect healthGigShield ResponseAQI trigger T-04 fires. Zone-specific payout initiated proportional to coverage hours lost
+
+Coverage Boundaries (Strictly Enforced)
+Covered ✅NOT Covered ❌Income lost due to rain/flood halting deliveriesVehicle breakdown repair costsIncome lost due to extreme heat making work unsafeHealth treatment / hospitalizationIncome lost during city-wide bandh / curfewAccident medical billsIncome lost due to severe AQI disruptionLife insurance
