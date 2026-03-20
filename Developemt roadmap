@@ -1,0 +1,101 @@
+Overview
+PhaseDurationThemeKey DeliverablePhase 1March 4–20Ideate & Know Your Delivery WorkerREADME + 2-min videoPhase 2March 21–April 4Protect Your WorkerWorking app + 2-min demoPhase 3April 5–17Perfect for Your WorkerFinal app + 5-min video + pitch deck
+
+Phase 1 — Ideation & Foundation (Weeks 1–2)
+March 4 – March 20
+Theme: "Ideate & Know Your Delivery Worker"
+Week 1 Tasks
+
+ Finalize persona: Food Delivery (Zomato / Swiggy), Chennai
+ Define all 5 parametric trigger conditions and thresholds
+ Design weekly premium formula with tiers
+ Design 3-layer fraud detection architecture
+ Create system architecture and data flow diagram
+ Define database schema (workers, policies, claims, trigger_events)
+ Initialize GitHub repository with docs folder structure
+ Write all 14 documentation files
+
+Week 2 Tasks
+
+ Scaffold React + Vite frontend project
+ Scaffold Express.js backend with Sequelize models
+ Connect OpenWeatherMap API — live test and verify response format
+ Connect OpenAQ API — live test
+ Build basic worker onboarding UI prototype (non-functional wireframe)
+ Set up Docker Compose (PostgreSQL + Redis + Node + React)
+ Record 2-minute Phase 1 strategy video
+ Submit Phase 1 deliverables
+
+Phase 1 Deliverable: This README + docs + 2-min video link
+
+Phase 2 — Automation & Protection (Weeks 3–4)
+March 21 – April 4
+Theme: "Protect Your Worker"
+Week 3 Tasks
+
+ Complete worker registration flow (phone OTP → profile → UPI setup)
+ Build policy creation UI with tier selection and premium display
+ Implement XGBoost risk scoring model (Python FastAPI)
+ Build dynamic premium calculator API endpoint
+ Set up Bull + Redis background job for 15-min trigger polling
+ Implement T-01 (Rain) and T-04 (AQI) triggers end-to-end
+ Build basic claim record creation on trigger fire
+
+Week 4 Tasks
+
+ Implement T-02 (Flood), T-03 (Heat), T-05 (Social) triggers
+ Build Fraud Layer 1 (GPS validation) and Layer 2 (activity validation)
+ Integrate Razorpay sandbox for mock payout processing
+ Build worker dashboard: active policy, claim history, earnings protected
+ Implement FCM push notifications for claim status
+ Integration test: Rain trigger → fraud check → payout → notification
+ Record 2-minute Phase 2 demo video
+
+Phase 2 Deliverable: Executable source code + 2-min demo video
+
+Phase 3 — Scale & Optimise (Weeks 5–6)
+April 5 – April 17
+Theme: "Perfect for Your Worker"
+Week 5 Tasks
+
+ Implement Fraud Layer 3 (Isolation Forest ML — statistical anomaly)
+ Add GPS spoofing detection (velocity + mock location app detection)
+ Build insurer admin dashboard: loss ratios, zone heatmap (Leaflet)
+ Integrate Prophet forecasting model for predictive disruption view
+ Add forecast-based dynamic pricing on weekly renewal
+ Build human review queue UI for 0.7–0.9 fraud score claims
+ Implement No-Claim Bonus discount logic
+
+Week 6 Tasks
+
+ Build disruption simulation tool for demo ("trigger fake rainstorm" API)
+ End-to-end flow test (simulate → trigger → fraud → approve → payout)
+ Final mobile responsiveness and UI polish
+ Performance testing (API response times, ML inference latency)
+ Prepare final pitch deck PDF
+ Record 5-minute final walkthrough demo video
+ Submit final package
+
+Phase 3 Deliverable: 5-min demo video + Final Pitch Deck (PDF) + complete codebase
+
+Definition of Done (Per Phase)
+Phase 1 DoD
+
+All 14 documentation files complete and linked
+GitHub repo initialized and public
+2-min video uploaded and linked in README
+
+Phase 2 DoD
+
+Worker can register, get risk-scored, and purchase a weekly policy
+At least 3 triggers fire correctly in test environment
+At least 1 end-to-end claim reaches mock payout
+Demo video shows the full flow
+
+Phase 3 DoD
+
+All 5 triggers operational
+Fraud detection all 3 layers functional
+Both worker and insurer dashboards complete
+Disruption simulation works for live demo
+5-min video shows full automated claim lifecycle
